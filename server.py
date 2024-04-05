@@ -79,7 +79,7 @@ class Server(QThread):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    hostname = "192.168.88.213"
+    hostname = "127.0.0.1" #"192.168.88.213"
     port = 8080
     server = Server(hostname, port)
     server.start()

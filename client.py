@@ -1,6 +1,7 @@
 import sys
 import socket
 import pickle
+import threading
 from PyQt6.QtCore import QObject, QSize, QThread
 from PyQt6.QtWidgets import QWidget, QApplication, QTextEdit, QVBoxLayout, QLineEdit, QMainWindow
 
@@ -22,9 +23,9 @@ class Client(QThread):
             socket.AF_INET, socket.SOCK_STREAM)
         try:
             self.clientsoc.connect((self.host, self.port))
-            self.clientsoc.send(pickle.dump(self.nickname))
-        except:
-            print("Could not connect to server")
+            self.clientsoc.send(pickle.dumps(self.nickname))
+        except Exception as e:
+            print(f"{e}/nCould not connect to server")
             self.stop()
             sys.exit()
     
@@ -86,12 +87,13 @@ class MainWindow(QWidget):
         self.show()
         self.lineedit.setFocus()
         
-        self.hostname = "192.168.88.213"
+        self.hostname = "127.0.0.1" #"192.168.88.213"
         self.port = 8080
         #self.username
         self.client = Client(self.hostname, self.port,
-            self.username, self.lineedit, self.textedit)
-        self.client.run()
+            self.username.text(), self.lineedit, self.textedit)
+        threading.Thread(
+            target=self.client.run).start()
 
 
     def return_pressed(self):
