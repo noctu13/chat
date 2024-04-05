@@ -6,12 +6,14 @@ from PyQt6.QtWidgets import QWidget, QApplication, QTextEdit, QVBoxLayout, QLine
 
 class Client(QThread):
 
-    def __init__(self, host, port, nickname, lineedit):
+    def __init__(self, host, port, nickname, 
+        lineedit, textedit):
         super(Client, self).__init__(parent = None)
         self.host = host
         self.port = port
         self.nickname = nickname
         self.lineedit = lineedit
+        self.textedit = textedit
         self.lineedit.returnPressed.connect(self.send)
         self.msg = ""
 
@@ -31,17 +33,17 @@ class Client(QThread):
             self.receive()
     
     def receive(self):
-        while self.running:
-            try:
-                self.data = self.clientsoc.recv(1024)
-                self.data = pickle.loads(self.data)
-                if self.data:
-                    print(str(self.data[0]) + ": " + self.data[1])
-                    #if self.data[0] != self.nickname:
-            except:
-                print("Error receiving")
-                self.stop()
-                sys.exit()
+        try:
+            self.data = self.clientsoc.recv(1024)
+            self.data = pickle.loads(self.data)
+            if self.data:
+                msg = f"{self.data[0]}: {self.data[1]}"
+                if self.data[0] != self.nickname:
+                    self.textedit.append(msg)
+        except:
+            print("Error receiving")
+            self.stop()
+            sys.exit()
     
     def send(self):
         self.msg = self.lineedit.text()
@@ -83,6 +85,13 @@ class MainWindow(QWidget):
         self.lineedit.returnPressed.connect(self.return_pressed)
         self.show()
         self.lineedit.setFocus()
+        
+        self.hostname = "192.168.88.213"
+        self.port = 8080
+        #self.username
+        self.client = Client(self.hostname, self.port,
+            self.username, self.lineedit, self.textedit)
+        self.client.run()
 
 
     def return_pressed(self):
@@ -90,6 +99,7 @@ class MainWindow(QWidget):
         message = self.username.text() + ': ' + self.lineedit.text()
         self.textedit.append(message)
         #self.lineedit.setText("")
+        
 
 app = QApplication([])
 
